@@ -4,7 +4,6 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Rocket, Home, FileText, Mail, Shield } from 'lucide-react';
-import EditorJs from '@/components/EditorJs';
 
 const navItems = [
   { name: 'Home', href: '/', icon: Home },
