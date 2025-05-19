@@ -162,60 +162,6 @@ export default function Admin() {
                 New Post
               </Link>
             </motion.div>
-
-            {/* Recent Posts */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.4 }}
-              className="bg-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10 col-span-2"
-            >
-              <h2 className="text-xl font-semibold text-white mb-4">Recent Posts</h2>
-              <div className="space-y-4">
-                {posts.map((post) => (
-                  <div key={post.id} className="flex items-center justify-between p-4 bg-white/5 rounded-lg">
-                    <div className="flex-1">
-                      <h3 className="text-white font-medium">{post.title}</h3>
-                      <p className="text-gray-400 text-sm">{new Date(post.created_at).toLocaleDateString()}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button
-                        onClick={() => handlePublish(post.id, !post.published)}
-                        className={`p-2 rounded-md ${
-                          post.published 
-                            ? 'bg-green-600 hover:bg-green-700' 
-                            : 'bg-gray-600 hover:bg-gray-700'
-                        }`}
-                        title={post.published ? 'Unpublish' : 'Publish'}
-                      >
-                        {post.published ? (
-                          <Eye className="w-5 h-5 text-white" />
-                        ) : (
-                          <EyeOff className="w-5 h-5 text-white" />
-                        )}
-                      </button>
-                      <Link
-                        href={`/admin/edit/${post.id}`}
-                        className="p-2 bg-blue-600 hover:bg-blue-700 rounded-md"
-                        title="Edit"
-                      >
-                        <Edit className="w-5 h-5 text-white" />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(post.id)}
-                        className="p-2 bg-red-600 hover:bg-red-700 rounded-md"
-                        title="Delete"
-                      >
-                        <Trash2 className="w-5 h-5 text-white" />
-                      </button>
-                    </div>
-                  </div>
-                ))}
-                {posts.length === 0 && (
-                  <p className="text-gray-400 text-center py-4">No posts yet</p>
-                )}
-              </div>
-            </motion.div>
           </div>
         </div>
       </div>

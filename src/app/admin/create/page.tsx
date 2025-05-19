@@ -47,12 +47,15 @@ export default function CreatePost() {
     setError(null);
     try {
       if (!user) throw new Error('User not authenticated');
-      // Create unique slug from title
-      const slug = formData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9가-힣]+/g, '-')
-        .replace(/(^-|-$)/g, '')
-        + '-' + nanoid(6);
+      
+      // Create hash from title using browser's crypto API
+      const encoder = new TextEncoder();
+      const data = encoder.encode(formData.title);
+      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+      const hashArray = Array.from(new Uint8Array(hashBuffer));
+      const titleHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 8);
+      const slug = `post-${titleHash}-${nanoid(6)}`;
+      
       const newPost = {
         ...formData,
         published: true,

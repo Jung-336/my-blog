@@ -271,15 +271,38 @@ export async function deletePost(id: string) {
 }
 
 export async function getPost(slug: string) {
-  const { data, error } = await supabase
+  // First try to get the post with the exact slug
+  let { data, error } = await supabase
     .from('posts')
     .select('*')
     .eq('slug', slug)
     .eq('published', true)
     .single();
 
+  // If not found and the slug doesn't start with 'post-', try to find by title
+  if (!data && !slug.startsWith('post-')) {
+    const { data: posts, error: searchError } = await supabase
+      .from('posts')
+      .select('*')
+      .eq('published', true)
+      .ilike('title', `%${slug}%`)
+      .limit(1);
+
+    if (searchError) {
+      throw searchError;
+    }
+
+    if (posts && posts.length > 0) {
+      data = posts[0];
+    }
+  }
+
   if (error) {
     throw error;
+  }
+
+  if (!data) {
+    throw new Error('Post not found');
   }
 
   return data;
