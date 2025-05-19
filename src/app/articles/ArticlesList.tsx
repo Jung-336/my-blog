@@ -25,16 +25,23 @@ export default function ArticlesList({ initialPosts, initialTotalPages, initialP
     if (!confirm('Are you sure you want to delete this post?')) return;
     try {
       await deletePost(id);
+      setPosts(posts.filter(post => post.id !== id));
       router.refresh();
     } catch (error) {
-      setError('Failed to delete post');
+      console.error('Failed to delete post:', error);
+      setError('Failed to delete post. Please try again.');
     }
   };
 
   const handlePageChange = async (page: number) => {
-    setCurrentPage(page);
-    window.scrollTo(0, 0);
-    router.push(`/articles?page=${page}`);
+    try {
+      setCurrentPage(page);
+      window.scrollTo(0, 0);
+      router.push(`/articles?page=${page}`);
+    } catch (error) {
+      console.error('Failed to change page:', error);
+      setError('Failed to change page. Please try again.');
+    }
   };
 
   if (error) return <div className="min-h-screen flex items-center justify-center"><div className="text-red-500">{error}</div></div>;
