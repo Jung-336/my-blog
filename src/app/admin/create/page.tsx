@@ -43,28 +43,26 @@ export default function CreatePost() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
     setIsLoading(true);
-
+    setError(null);
     try {
       if (!user) throw new Error('User not authenticated');
-
       // Create unique slug from title
       const slug = formData.title
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/[^a-z0-9가-힣]+/g, '-')
         .replace(/(^-|-$)/g, '')
         + '-' + nanoid(6);
-
-      await createPost({
+      const newPost = {
         ...formData,
+        published: true,
         slug,
         author_id: user.id,
-      }, selectedHashtags);
-
-      router.push('/admin');
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Failed to create post');
+      };
+      const created = await createPost(newPost, selectedHashtags);
+      router.push(`/articles/${created.slug}`);
+    } catch (err: any) {
+      setError(err.message || 'Failed to create post');
     } finally {
       setIsLoading(false);
     }
@@ -259,19 +257,6 @@ export default function CreatePost() {
                   onChange={(content) => setFormData(prev => ({ ...prev, content }))}
                 />
               </div>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-gray-300">
-                <input
-                  type="checkbox"
-                  name="published"
-                  checked={formData.published}
-                  onChange={(e) => setFormData(prev => ({ ...prev, published: e.target.checked }))}
-                  className="rounded border-white/20 bg-white/5 text-blue-600 focus:ring-blue-500"
-                />
-                Publish immediately
-              </label>
             </div>
 
             <div className="flex justify-end gap-4">
