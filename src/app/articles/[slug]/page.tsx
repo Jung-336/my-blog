@@ -10,6 +10,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { ArrowLeft, ArrowRight, List, ChevronFirst, ChevronLast } from 'lucide-react';
 import Link from 'next/link';
+import { Components } from 'react-markdown';
 
 export default function ArticlePage() {
   const params = useParams();
@@ -57,6 +58,30 @@ export default function ArticlePage() {
     );
   }
 
+  const components: Components = {
+    h1: ({ node, ...props }) => <h1 className="text-3xl font-bold mb-4" {...props} />,
+    h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-3" {...props} />,
+    h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2" {...props} />,
+    p: ({ node, ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
+    ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4" {...props} />,
+    ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-4" {...props} />,
+    li: ({ node, ...props }) => <li className="mb-2" {...props} />,
+    a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300" {...props} />,
+    code: ({ node, className, children, ...props }) => {
+      const match = /language-(\w+)/.exec(className || '');
+      return !match ? (
+        <code className="bg-white/10 px-1 py-0.5 rounded" {...props}>{children}</code>
+      ) : (
+        <code className="block bg-white/10 p-4 rounded-lg mb-4 overflow-x-auto" {...props}>{children}</code>
+      );
+    },
+    pre: ({ node, ...props }) => <pre className="mb-4" {...props} />,
+    blockquote: ({ node, ...props }) => 
+      <blockquote className="border-l-4 border-gray-600 pl-4 italic my-4" {...props} />,
+    img: ({ node, ...props }) => 
+      <img className="max-w-full h-auto rounded-lg my-4" {...props} />,
+  };
+
   return (
     <article className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
       <motion.div
@@ -79,25 +104,7 @@ export default function ArticlePage() {
         <div className="prose prose-invert max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={{
-              h1: ({ node, ...props }) => <h1 className="text-3xl font-bold mb-4" {...props} />,
-              h2: ({ node, ...props }) => <h2 className="text-2xl font-bold mb-3" {...props} />,
-              h3: ({ node, ...props }) => <h3 className="text-xl font-bold mb-2" {...props} />,
-              p: ({ node, ...props }) => <p className="mb-4 leading-relaxed" {...props} />,
-              ul: ({ node, ...props }) => <ul className="list-disc pl-6 mb-4" {...props} />,
-              ol: ({ node, ...props }) => <ol className="list-decimal pl-6 mb-4" {...props} />,
-              li: ({ node, ...props }) => <li className="mb-2" {...props} />,
-              a: ({ node, ...props }) => <a className="text-blue-400 hover:text-blue-300" {...props} />,
-              code: ({ node, inline, ...props }) => 
-                inline ? 
-                  <code className="bg-white/10 px-1 py-0.5 rounded" {...props} /> :
-                  <code className="block bg-white/10 p-4 rounded-lg mb-4 overflow-x-auto" {...props} />,
-              pre: ({ node, ...props }) => <pre className="mb-4" {...props} />,
-              blockquote: ({ node, ...props }) => 
-                <blockquote className="border-l-4 border-gray-600 pl-4 italic my-4" {...props} />,
-              img: ({ node, ...props }) => 
-                <img className="max-w-full h-auto rounded-lg my-4" {...props} />,
-            }}
+            components={components}
           >
             {post.content}
           </ReactMarkdown>
