@@ -10,9 +10,6 @@ import { nanoid } from 'nanoid';
 import dynamic from 'next/dynamic';
 import MarkdownEditor from '@/components/MarkdownEditor';
 
-// 동적 import (SSR 비활성화)
-// const EditorJs = dynamic(() => import('@/components/EditorJs'), { ssr: false });
-
 export default function CreatePost() {
   const router = useRouter();
   const { user } = useAuth();
