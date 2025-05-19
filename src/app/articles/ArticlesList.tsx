@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import { deletePost, Post } from '@/lib/posts';
 import { formatDate } from '@/lib/utils';
 import Link from 'next/link';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 interface ArticlesListProps {
@@ -18,7 +18,8 @@ export default function ArticlesList({ initialPosts, initialTotalPages, initialP
   const router = useRouter();
   const [posts, setPosts] = useState(initialPosts);
   const [currentPage, setCurrentPage] = useState(initialPage);
-  const [totalPages] = useState(initialTotalPages);
+  const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
@@ -33,18 +34,39 @@ export default function ArticlesList({ initialPosts, initialTotalPages, initialP
     }
   };
 
-  const handlePageChange = async (page: number) => {
+  const handlePageChange = async (newPage: number) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
     try {
-      setCurrentPage(page);
-      window.scrollTo(0, 0);
-      router.push(`/articles?page=${page}`);
-    } catch (error) {
-      console.error('Failed to change page:', error);
-      setError('Failed to change page. Please try again.');
+      const response = await fetch(`/api/posts?page=${newPage}`);
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch posts');
+      }
+      
+      setPosts(data.posts);
+      setCurrentPage(newPage);
+      setTotalPages(data.totalPages);
+    } catch (err) {
+      setError('Failed to load posts');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   if (error) return <div className="min-h-screen flex items-center justify-center"><div className="text-red-500">{error}</div></div>;
+
+  if (posts.length === 0) {
+    return (
+      <div className="text-center text-gray-400">
+        No articles found.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
@@ -54,44 +76,65 @@ export default function ArticlesList({ initialPosts, initialTotalPages, initialP
           <p className="text-xl text-gray-300">Explore all published articles</p>
         </motion.div>
 
-        <div className="grid gap-8">
-          {posts.map((post) => (
-            <motion.article key={post.id} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10">
-              <div className="flex justify-between items-start">
-                <div>
-                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-2">
+        <div className="space-y-8">
+          <div className="grid grid-cols-1 gap-8">
+            {posts.map((post) => (
+              <motion.article
+                key={post.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+                className="bg-white/5 backdrop-blur-lg rounded-lg overflow-hidden border border-white/10"
+              >
+                <div className="p-6">
+                  <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
                     <span>{formatDate(post.created_at)}</span>
                     <span>•</span>
-                    <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full">{post.category}</span>
+                    <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full">
+                      {post.category}
+                    </span>
                   </div>
-                  <h2 className="text-2xl font-bold text-white mb-2">
-                    <Link href={`/articles/${post.slug}`} className="hover:text-blue-400 transition-colors">{post.title}</Link>
+                  <h2 className="text-2xl font-semibold text-white mb-3">
+                    {post.title}
                   </h2>
-                  <p className="text-gray-300">{post.excerpt}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Link href={`/admin/edit/${post.id}`} className="p-2 bg-blue-600 hover:bg-blue-700 rounded-md" title="Edit">
-                    <Edit className="w-5 h-5 text-white" />
+                  <p className="text-gray-300 mb-4 line-clamp-3">
+                    {post.excerpt}
+                  </p>
+                  <Link
+                    href={`/articles/${post.slug}`}
+                    className="inline-flex items-center text-blue-500 hover:text-blue-400"
+                  >
+                    Read More
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Link>
-                  <button onClick={() => handleDelete(post.id)} className="p-2 bg-red-600 hover:bg-red-700 rounded-md" title="Delete">
-                    <Trash2 className="w-5 h-5 text-white" />
-                  </button>
                 </div>
-              </div>
-            </motion.article>
-          ))}
-          {posts.length === 0 && <p className="text-gray-400 text-center py-8">No articles found</p>}
-        </div>
-
-        {totalPages > 1 && (
-          <div className="mt-8 flex justify-center gap-2">
-            <button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1} className="px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">Previous</button>
-            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-              <button key={page} onClick={() => handlePageChange(page)} className={`px-4 py-2 rounded-md ${currentPage === page ? 'bg-blue-600 text-white' : 'bg-white/5 text-white hover:bg-white/10'}`}>{page}</button>
+              </motion.article>
             ))}
-            <button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages} className="px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed">Next</button>
           </div>
-        )}
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex justify-center items-center gap-4 mt-8">
+              <button
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1 || isLoading}
+                className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <span className="text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages || isLoading}
+                className="p-2 rounded-md bg-white/5 hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

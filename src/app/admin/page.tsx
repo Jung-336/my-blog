@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Lock, Mail, LogOut, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, LogOut, Edit, Trash2, Eye, EyeOff, Plus } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn, getCurrentUser, signOut } from '@/lib/auth';
 import { getPosts, togglePublish, deletePost, Post } from '@/lib/posts';
+import { formatDate } from '@/lib/utils';
+import Script from 'next/script';
 
 export default function Admin() {
   const router = useRouter();
@@ -42,7 +44,7 @@ export default function Admin() {
 
   const loadPosts = async () => {
     try {
-      const result = await getPosts(false); // Get unpublished posts
+      const result = await getPosts(true);
       setPosts(result.posts);
     } catch (error) {
       setError('Failed to load posts');
@@ -117,53 +119,98 @@ export default function Admin() {
 
   if (isLoggedIn) {
     return (
-      <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            className="text-center mb-16"
-          >
-            <div className="flex justify-between items-center mb-8">
-              <h1 className="text-4xl font-bold text-white">Admin Dashboard</h1>
-              <button
-                onClick={handleLogout}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors"
-              >
-                <LogOut className="w-5 h-5" />
-                Logout
-              </button>
+      <div className="min-h-screen bg-black text-white">
+        <main className="container mx-auto px-4 py-16">
+          <div className="max-w-4xl mx-auto">
+            {/* Google AdSense Ad */}
+            <div className="mb-8">
+              <Script
+                async
+                src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5290244357086785"
+                crossOrigin="anonymous"
+                strategy="afterInteractive"
+              />
+              <ins
+                className="adsbygoogle"
+                style={{ display: 'block' }}
+                data-ad-client="ca-pub-5290244357086785"
+                data-ad-slot="7081915067"
+                data-ad-format="auto"
+                data-full-width-responsive="true"
+              />
+              <Script id="adsbygoogle-init">
+                {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+              </Script>
             </div>
-            <p className="text-xl text-gray-300">
-              Manage your blog content
-            </p>
-          </motion.div>
 
-          {error && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-500 px-4 py-2 rounded-md text-sm mb-8">
-              {error}
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {/* Create New Post */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.2 }}
-              className="bg-white/5 backdrop-blur-lg rounded-lg p-6 border border-white/10"
+              transition={{ duration: 0.5 }}
             >
-              <h2 className="text-xl font-semibold text-white mb-4">Create New Post</h2>
-              <Link 
-                href="/admin/create"
-                className="block w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors text-center"
-              >
-                New Post
-              </Link>
+              <div className="flex justify-between items-center mb-8">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+                  Admin Dashboard
+                </h1>
+                <Link
+                  href="/admin/new"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  <Plus className="w-5 h-5" />
+                  <span>New Post</span>
+                </Link>
+              </div>
+
+              {isLoading ? (
+                <div className="text-center text-white">Loading...</div>
+              ) : error ? (
+                <div className="text-center text-red-500">{error}</div>
+              ) : (
+                <div className="space-y-4">
+                  {posts.map((post) => (
+                    <motion.div
+                      key={post.id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5 }}
+                      className="bg-white/5 backdrop-blur-lg rounded-lg overflow-hidden border border-white/10"
+                    >
+                      <div className="p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                            <span>{formatDate(post.created_at)}</span>
+                            <span>•</span>
+                            <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full">
+                              {post.category}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Link
+                              href={`/admin/edit/${post.id}`}
+                              className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
+                            >
+                              <Edit className="w-5 h-5" />
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(post.id)}
+                              className="p-2 text-gray-400 hover:text-red-400 transition-colors"
+                            >
+                              <Trash2 className="w-5 h-5" />
+                            </button>
+                          </div>
+                        </div>
+                        <h2 className="text-xl font-semibold text-white mb-2">
+                          {post.title}
+                        </h2>
+                        <p className="text-gray-300 line-clamp-2">{post.excerpt}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           </div>
-        </div>
+        </main>
       </div>
     );
   }

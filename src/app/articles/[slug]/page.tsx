@@ -8,12 +8,20 @@ import { formatDate } from '@/lib/utils';
 import { nanoid } from 'nanoid';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { ArrowLeft, ArrowRight, List, ChevronFirst, ChevronLast } from 'lucide-react';
+import { ArrowLeft, ArrowRight, List } from 'lucide-react';
 import Link from 'next/link';
 import { Components } from 'react-markdown';
+import Script from 'next/script';
 
-export default function ArticlePage() {
-  const params = useParams();
+export const revalidate = 60;
+
+interface PageProps {
+  params: {
+    slug: string;
+  };
+}
+
+export default function ArticlePage({ params }: PageProps) {
   const router = useRouter();
   const [post, setPost] = useState<Post | null>(null);
   const [prevPost, setPrevPost] = useState<Post | null>(null);
@@ -83,67 +91,84 @@ export default function ArticlePage() {
   };
 
   return (
-    <article className="max-w-4xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8 }}
-      >
-        <header className="mb-12">
-          <div className="flex items-center gap-4 text-sm text-gray-400 mb-4">
-            <span>{formatDate(post.created_at)}</span>
-            <span>•</span>
-            <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full">
-              {post.category}
-            </span>
+    <div className="min-h-screen bg-black text-white">
+      <main className="container mx-auto px-4 py-16">
+        <article className="max-w-4xl mx-auto">
+          {/* Google AdSense Ad */}
+          <div className="mb-8">
+            <Script
+              async
+              src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5290244357086785"
+              crossOrigin="anonymous"
+              strategy="afterInteractive"
+            />
+            <ins
+              className="adsbygoogle"
+              style={{ display: 'block' }}
+              data-ad-client="ca-pub-5290244357086785"
+              data-ad-slot="7081915067"
+              data-ad-format="auto"
+              data-full-width-responsive="true"
+            />
+            <Script id="adsbygoogle-init">
+              {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+            </Script>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-6">{post.title}</h1>
-          <p className="text-xl text-gray-300">{post.excerpt}</p>
-        </header>
 
-        <div className="prose prose-invert max-w-none">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={components}
-          >
-            {post.content}
-          </ReactMarkdown>
-        </div>
+          <header className="mb-8">
+            <h1 className="text-4xl font-bold mb-4 bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">
+              {post.title}
+            </h1>
+            <div className="flex items-center gap-4 text-sm text-gray-400">
+              <span>{formatDate(post.created_at)}</span>
+              <span>•</span>
+              <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-full">
+                {post.category}
+              </span>
+            </div>
+          </header>
 
-        {/* Navigation Buttons */}
-        <div className="mt-12 pt-8 border-t border-white/10">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <Link
-              href="/articles"
-              className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
-            >
-              <List className="w-5 h-5" />
-              <span>목록으로</span>
-            </Link>
+          <div className="prose prose-invert max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
+              {post.content}
+            </ReactMarkdown>
+          </div>
 
-            <div className="flex items-center gap-2">
-              {prevPost && (
-                <Link
-                  href={`/articles/${prevPost.slug}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                  <span>이전글 ({prevPost.title})</span>
-                </Link>
-              )}
-              {nextPost && (
-                <Link
-                  href={`/articles/${nextPost.slug}`}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
-                >
-                  <span>다음글 ({nextPost.title})</span>
-                  <ArrowRight className="w-5 h-5" />
-                </Link>
-              )}
+          {/* Navigation Buttons */}
+          <div className="mt-12 pt-8 border-t border-white/10">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <Link
+                href="/articles"
+                className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
+              >
+                <List className="w-5 h-5" />
+                <span>목록으로</span>
+              </Link>
+
+              <div className="flex items-center gap-2">
+                {prevPost && (
+                  <Link
+                    href={`/articles/${prevPost.slug}`}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                    <span>이전글 ({prevPost.title})</span>
+                  </Link>
+                )}
+                {nextPost && (
+                  <Link
+                    href={`/articles/${nextPost.slug}`}
+                    className="flex items-center gap-2 px-4 py-2 bg-white/5 text-white rounded-md hover:bg-white/10 transition-colors"
+                  >
+                    <span>다음글 ({nextPost.title})</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </motion.div>
-    </article>
+        </article>
+      </main>
+    </div>
   );
 } 

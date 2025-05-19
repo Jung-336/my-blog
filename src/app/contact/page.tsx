@@ -2,11 +2,33 @@
 
 import { motion } from 'framer-motion';
 import { FaGithub, FaLinkedin, FaFacebook } from 'react-icons/fa';
+import Script from 'next/script';
 
 export default function Contact() {
   return (
     <div className="min-h-screen py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        {/* Google AdSense Ad */}
+        <div className="mb-8">
+          <Script
+            async
+            src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5290244357086785"
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+          <ins
+            className="adsbygoogle"
+            style={{ display: 'block' }}
+            data-ad-client="ca-pub-5290244357086785"
+            data-ad-slot="7081915067"
+            data-ad-format="auto"
+            data-full-width-responsive="true"
+          />
+          <Script id="adsbygoogle-init">
+            {`(adsbygoogle = window.adsbygoogle || []).push({});`}
+          </Script>
+        </div>
+
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
